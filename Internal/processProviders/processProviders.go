@@ -362,6 +362,8 @@ import (
     "encoding/xml"
     "fmt"
     "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
+	"context"
 )
 
 `
@@ -381,7 +383,7 @@ import (
                 Required: true,
             },`
 
-	strClientInit = `(d *schema.ResourceData, m interface{}) error {
+	strClientInit = `(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 
 	var err error
 	client := m.(*ProviderConfig)
@@ -844,10 +846,10 @@ func initializeFunctionString(name string) {
 
 	// Append text with function name to schema string.
 	var schemaTemp string = "\n\nfunc junos" + name + "() *schema.Resource {\n\treturn &schema.Resource{\n"
-	schemaTemp = schemaTemp + "\t\tCreate: junos" + name + "Create,\n"
-	schemaTemp = schemaTemp + "\t\tRead: junos" + name + "Read,\n"
-	schemaTemp = schemaTemp + "\t\tUpdate: junos" + name + "Update,\n"
-	schemaTemp = schemaTemp + "\t\tDelete: junos" + name + "Delete,"
+	schemaTemp = schemaTemp + "\t\tCreateContext: junos" + name + "Create,\n"
+	schemaTemp = schemaTemp + "\t\tReadContext: junos" + name + "Read,\n"
+	schemaTemp = schemaTemp + "\t\tUpdateContext: junos" + name + "Update,\n"
+	schemaTemp = schemaTemp + "\t\tDeleteContext: junos" + name + "Delete,"
 	strSchema = schemaTemp + strSchema
 }
 
@@ -1062,10 +1064,10 @@ func createFile(moduleFilePath, providerName string) error {
 	strStruct += "\n}"
 	// Append for the create function.
 	strCreate += strGetFunc + "\n" + strVarAssign + strSendTrans + strSetIdValue +
-		"\n\treturn junos" + strModuleName + "Read(d,m)" + "\n}"
+		"\n\treturn junos" + strModuleName + "Read(ctx,d,m)" + "\n}"
 	// Append for the update function.
 	strUpdate += strGetFunc + "\n" + strVarAssign + strSendTransId +
-		"\n\treturn junos" + strModuleName + "Read(d,m)" + "\n}"
+		"\n\treturn junos" + strModuleName + "Read(ctx,d,m)" + "\n}"
 	// Append for the read function.
 	strRead += strSetFunc + "\n\treturn nil\n}"
 	// Append for the delete function.
