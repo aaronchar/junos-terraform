@@ -272,7 +272,7 @@ func CreateProviders(jcfg cfg.Config) error {
 	providerFileData += `			"junos-` + jcfg.ProviderName + `_commit": junosCommit(),
 	        	"junos-` + jcfg.ProviderName + `_destroycommit": junosDestroyCommit(),
 			},
-		    ConfigureFunc: providerConfigure,
+		    ConfigureContextFunc: providerConfigure,
 	    } 
     }
 `
@@ -1131,9 +1131,10 @@ func listFiles(yangFilePath string) {
 package main
 
 import (
-
+	"context"
 	gonetconf "github.com/davedotdev/go-netconf/helpers/junos_helpers"
 	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/diag"
 	"os"
 )
 
@@ -1142,7 +1143,9 @@ type ProviderConfig struct {
 	*gonetconf.GoNCClient
 	Host string
 }
-
+func init() {
+	schema.DescriptionKind = schema.StringMarkdown
+}
 func check(err error) {
 	if err != nil {
 		// Some of these errors will be "normal".
@@ -1154,7 +1157,7 @@ func check(err error) {
 }
 
 
-func providerConfigure(d *schema.ResourceData) (interface{}, error) {
+func providerConfigure(ctx context.Context,d *schema.ResourceData) (interface{}, diag.Diagnostics) {
 	config := Config{
 		Host:     d.Get("host").(string),
 		Port:     d.Get("port").(int),
@@ -1165,7 +1168,7 @@ func providerConfigure(d *schema.ResourceData) (interface{}, error) {
 
 	client, err := config.Client()
 	if err != nil {
-		return nil, err
+		return nil, diag.FromErr(err)
 	}
 
 	return &ProviderConfig{client, config.Host}, nil
