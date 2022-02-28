@@ -771,7 +771,9 @@ func setListXpathMatch(uses string, nodeCheck Node, schemaTab string, structXpat
 
 				strStruct += "\n" + schemaTab + "V_" + val_ + "  *string  `xml:\"" + keyVar + ",omitempty\"`"
 				strGetFunc += "\tV_" + val_ + " := d.Get(\"" + val_ + "\").(string)\n"
-				strSetFunc += "\td.Set(\"" + val_ + "\", " + strStructHierarchy + ".V_" + val_ + ")\n"
+				strSetFunc += "\tif err :=d.Set(\"" + val_ + "\", " + strStructHierarchy + ".V_" + val_ + ");err != nil{\n"
+				strSetFunc += "\t\treturn diag.FromErr(err)\n"
+				strSetFunc += "\t}\n"
 				strVarAssign += "\t" + strStructHierarchy + ".V_" + val_ + " = &V_" + val_ + "\n"
 			}
 		}
@@ -960,7 +962,9 @@ func handleLeaf(nodes Node, strStructHierarchy string, schemaTab string) {
 		strSchema += "\n\t\t\t\tOptional: true,"
 		strSchema += "\n\t\t\t\tDescription:    \"xpath is: " + strStructHierarchy + ". " + desc + "\",\n\t\t\t},"
 		strGetFunc += "\tV_" + val_ + " := d.Get(\"" + val_ + "\").(string)\n"
-		strSetFunc += "\td.Set(\"" + val_ + "\", " + strStructHierarchy + ".V_" + val_ + ")\n"
+		strSetFunc += "\tif err := d.Set(\"" + val_ + "\", " + strStructHierarchy + ".V_" + val_ + ");err != nil{\n"
+		strSetFunc += "\t\treturn diag.FromErr(err)\n"
+		strSetFunc += "\t}\n"
 		strVarAssign += "\t" + strStructHierarchy + ".V_" + val_ + " = &V_" + val_ + "\n"
 	}
 }
