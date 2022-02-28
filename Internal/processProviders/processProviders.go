@@ -361,7 +361,7 @@ package main
 import (
     "encoding/xml"
     "fmt"
-    "github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+    "github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 )
 
 `
@@ -1133,7 +1133,7 @@ package main
 import (
 
 	gonetconf "github.com/davedotdev/go-netconf/helpers/junos_helpers"
-	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
+	"github.com/hashicorp/terraform-plugin-sdk/v2/helper/schema"
 	"os"
 )
 
