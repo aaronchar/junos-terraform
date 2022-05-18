@@ -1132,14 +1132,14 @@ package main
 
 import (
 
-	gonetconf "github.com/davedotdev/go-netconf/helpers/junos_helpers"
+	gonetconf "github.com/Juniper/junos-terraform/netconf"
 	"github.com/hashicorp/terraform-plugin-sdk/helper/schema"
 	"os"
 )
 
 // ProviderConfig is to hold client information
 type ProviderConfig struct {
-	*gonetconf.GoNCClient
+	*gonetconf.Client
 	Host string
 }
 

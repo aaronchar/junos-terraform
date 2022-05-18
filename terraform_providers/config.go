@@ -17,7 +17,7 @@
 package main
 
 import (
-	gonetconf "github.com/davedotdev/go-netconf/helpers/junos_helpers"
+	gonetconf "github.com/Juniper/junos-terraform/netconf"
 )
 
 // Config is the configuration structure used to instantiate the GoNETCONF provider.
@@ -30,11 +30,11 @@ type Config struct {
 }
 
 // Client returns a new client for the provider to use
-func (c *Config) Client() (*gonetconf.GoNCClient, error) {
+func (c *Config) Client() (gonetconf.Client, error) {
 	return newClient(c)
 }
 
-func newClient(c *Config) (*gonetconf.GoNCClient, error) {
+func newClient(c *Config) (gonetconf.Client, error) {
 
 	client, err := gonetconf.NewClient(c.Username, c.Password, c.SSHKey, c.Host, c.Port)
 	return client, err
