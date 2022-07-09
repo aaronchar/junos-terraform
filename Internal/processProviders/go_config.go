@@ -39,7 +39,7 @@ func (c *Config) Client() (netconf.Client, error) {
 
 func newClient(c *Config) (netconf.Client, error) {
 	if c.BulkMode {
-		client, err := netconf.NewBatchClient(c.Username, c.Password, c.SSHKey, c.Host, c.Port)
+		client, err := netconf.NewBulkClient(c.Username, c.Password, c.SSHKey, c.Host, c.Port)
 		return client, err
 	}
 	client, err := netconf.NewSerialClient(c.Username, c.Password, c.SSHKey, c.Host, c.Port)
