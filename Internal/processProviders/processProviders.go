@@ -1170,6 +1170,7 @@ func providerConfigure(ctx context.Context, d *schema.ResourceData) (interface{}
 		Username: d.Get("username").(string),
 		Password: d.Get("password").(string),
 		SSHKey:   d.Get("sshkey").(string),
+		BulkMode: d.Get("netconf_bulk").(bool),
 	}
 
 	client, err := config.Client()

@@ -3,7 +3,6 @@ package netconf
 import (
 	"encoding/xml"
 	"fmt"
-	"io/ioutil"
 	"strings"
 	"sync"
 
@@ -223,21 +222,8 @@ func (g *GoNCClient) readRawGroup(applyGroup string) (string, error) {
 	return reply.Data, nil
 }
 
-func publicKeyFile(file string) ssh.AuthMethod {
-	buffer, err := ioutil.ReadFile(file)
-	if err != nil {
-		return nil
-	}
-
-	key, err := ssh.ParsePrivateKey(buffer)
-	if err != nil {
-		return nil
-	}
-	return ssh.PublicKeys(key)
-}
-
-// NewClient returns go-netconf new client driver
-func NewClient(username string, password string, sshKey string, address string, port int) (Client, error) {
+// NewSerialClient returns go-netconf new client driver
+func NewSerialClient(username string, password string, sshKey string, address string, port int) (Client, error) {
 
 	// Dummy interface var ready for loading from inputs
 	var nconf driver.Driver

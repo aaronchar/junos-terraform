@@ -29,6 +29,7 @@ type Config struct {
 	Username string
 	Password string
 	SSHKey   string
+	BulkMode bool
 }
 
 // Client returns a new client for the provider to use
@@ -37,7 +38,10 @@ func (c *Config) Client() (netconf.Client, error) {
 }
 
 func newClient(c *Config) (netconf.Client, error) {
-
-	client, err := netconf.NewClient(c.Username, c.Password, c.SSHKey, c.Host, c.Port)
+	if c.BulkMode {
+		client, err := netconf.NewBatchClient(c.Username, c.Password, c.SSHKey, c.Host, c.Port)
+		return client, err
+	}
+	client, err := netconf.NewSerialClient(c.Username, c.Password, c.SSHKey, c.Host, c.Port)
 	return client, err
 }`
