@@ -1209,6 +1209,11 @@ func Provider() *schema.Provider {
 				Type:     schema.TypeString,
 				Required: true,
 			},
+			"netconf_bulk": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default: false,
+			},
 		},
 
 		ResourcesMap: map[string]*schema.Resource{
