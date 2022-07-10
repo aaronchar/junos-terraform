@@ -74,7 +74,7 @@ func (g *BulkGoNCClient) updateRawConfig(applyGroup string, netconfCall string, 
 }
 
 // DeleteConfig is a wrapper for driver.SendRaw()
-func (g *BulkGoNCClient) DeleteConfig(applyGroup string, _ bool) (string, error) {
+func (g *BulkGoNCClient) DeleteConfig(ctx context.Context, applyGroup string, _ bool) (string, error) {
 	if err := g.BH.AddToDeleteMap(applyGroup); err != nil {
 		return "", err
 	}
@@ -149,7 +149,7 @@ func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool) error
 }
 
 // MarshalGroup accepts a struct of type X and then marshals data onto it
-func (g *BulkGoNCClient) MarshalGroup(id string, obj interface{}) error {
+func (g *BulkGoNCClient) MarshalGroup(ctx context.Context, id string, obj interface{}) error {
 	reply, err := g.readRawGroup(id)
 	if err != nil {
 		return err
@@ -161,7 +161,7 @@ func (g *BulkGoNCClient) MarshalGroup(id string, obj interface{}) error {
 }
 
 // SendTransaction is a method that unnmarshals the XML, creates the transaction and passes in a commit
-func (g *BulkGoNCClient) SendTransaction(id string, obj interface{}, commit bool) error {
+func (g *BulkGoNCClient) SendTransaction(ctx context.Context, id string, obj interface{}, commit bool) error {
 	cfg, err := xml.Marshal(obj)
 	if err != nil {
 		return err
