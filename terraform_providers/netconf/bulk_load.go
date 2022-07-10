@@ -64,9 +64,6 @@ func (g *BulkGoNCClient) Close() error {
 
 // updateRawConfig deletes group data and replaces it (for Update in TF)
 func (g *BulkGoNCClient) updateRawConfig(applyGroup string, netconfCall string, _ bool) (string, error) {
-	// we are filling up the read buffer, this will only be done once regardless of the amount of \
-	g.Lock.Lock()
-	defer g.Lock.Unlock()
 
 	if err := g.BH.AddToDeleteMap(applyGroup); err != nil {
 		return "", err
@@ -191,6 +188,10 @@ func (g *BulkGoNCClient) sendRawConfig(netconfCall string, _ bool) (string, erro
 
 // readRawGroup is a helper function
 func (g *BulkGoNCClient) readRawGroup(applyGroup string) (string, error) {
+	// we are filling up the read buffer, this will only be done once regardless of the amount of \
+	g.Lock.Lock()
+	defer g.Lock.Unlock()
+
 	if !g.BH.IsHydrated() {
 		if err := g.hydrateReadCache(); err != nil {
 			return "", err
