@@ -23,11 +23,6 @@ const bulkGetGroupXMLStr = `<get-configuration>
   </configuration>
 </get-configuration>
 `
-const bulkValidateCandidate = `<validate> 
-<source> 
-	<candidate/> 
-</source> 
-</validate>`
 const bulkReadWrapper = `<configuration>%s</configuration>`
 
 const bulkCommitStr = `<commit/>`
@@ -84,7 +79,7 @@ func (g *BulkGoNCClient) DeleteConfig(applyGroup string, _ bool) (string, error)
 }
 
 // SendCommit is a wrapper for driver.SendRaw()
-func (g *BulkGoNCClient) SendCommit() error {
+func (g *BulkGoNCClient) SendCommit(commitCheck bool) error {
 
 	g.Lock.Lock()
 	defer g.Lock.Unlock()
@@ -126,21 +121,23 @@ func (g *BulkGoNCClient) SendCommit() error {
 			return fmt.Errorf("failed to write bulk configuration %s", bulkWriteReply.Data)
 		}
 	}
-	// we have loaded the full configuration without any error
-	// before we can commit this we are going to do a commit check
-	// if it fails we return the full xml error
-	commitCheckReply, err := g.Driver.SendRaw(bulkValidateCandidate)
-	if err != nil {
-		errInternal := g.Driver.Close()
-		return fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
+	if commitCheck {
+		// we have loaded the full configuration without any error
+		// before we can commit this we are going to do a commit check
+		// if it fails we return the full xml error
+		commitCheckReply, err := g.Driver.SendRaw(validateCandidate)
+		if err != nil {
+			errInternal := g.Driver.Close()
+			return fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
+		}
+		// I am doing string checks simply because it is most likely more efficient
+		// than loading in through a xml parser
+		if !strings.Contains(commitCheckReply.Data, "commit-check-success") {
+			return fmt.Errorf("candidate commit check failed %s", commitCheckReply.Data)
+		}
 	}
 
-	// I am doing string checks simply because it is most likely more efficient
-	// than loading in through a xml parser
-	if !strings.Contains(commitCheckReply.Data, "commit-check-success") {
-		return fmt.Errorf("candidate commit check failed %s", commitCheckReply.Data)
-	}
-	if _, err = g.Driver.SendRaw(bulkCommitStr); err != nil {
+	if _, err := g.Driver.SendRaw(bulkCommitStr); err != nil {
 		return err
 	}
 	return nil
@@ -189,6 +186,7 @@ func (g *BulkGoNCClient) sendRawConfig(netconfCall string, _ bool) (string, erro
 // readRawGroup is a helper function
 func (g *BulkGoNCClient) readRawGroup(applyGroup string) (string, error) {
 	// we are filling up the read buffer, this will only be done once regardless of the amount of \
+	// read calls that are required
 	g.Lock.Lock()
 	defer g.Lock.Unlock()
 

@@ -27,10 +27,10 @@ import (
 func junosCommitCreate(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 
 	id := d.Get("resource_name").(string)
-
+	commitCheck := d.Get("commit_check").(bool)
 	client := m.(*ProviderConfig)
 
-	if err := client.SendCommit(); err != nil {
+	if err := client.SendCommit(commitCheck); err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(fmt.Sprintf("%s_%s", client.Host, id))
@@ -67,6 +67,11 @@ func junosCommit() *schema.Resource {
 			"resource_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"commit_check": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 		},
 	}

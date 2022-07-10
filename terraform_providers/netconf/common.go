@@ -8,10 +8,16 @@ import (
 type Client interface {
 	Close() error
 	DeleteConfig(applyGroup string, commit bool) (string, error)
-	SendCommit() error
+	SendCommit(check bool) error
 	MarshalGroup(id string, obj interface{}) error
 	SendTransaction(id string, obj interface{}, commit bool) error
 }
+
+const validateCandidate = `<validate> 
+<source> 
+	<candidate/> 
+</source> 
+</validate>`
 
 func publicKeyFile(file string) ssh.AuthMethod {
 	buffer, err := ioutil.ReadFile(file)

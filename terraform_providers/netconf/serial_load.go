@@ -125,12 +125,27 @@ func (g *GoNCClient) DeleteConfig(applyGroup string, commit bool) (string, error
 }
 
 // SendCommit is a wrapper for driver.SendRaw()
-func (g *GoNCClient) SendCommit() error {
+func (g *GoNCClient) SendCommit(commitCheck bool) error {
 	g.Lock.Lock()
 	defer g.Lock.Unlock()
 
 	if err := g.Driver.Dial(); err != nil {
 		return err
+	}
+	if commitCheck {
+		// we have loaded the full configuration without any error
+		// before we can commit this we are going to do a commit check
+		// if it fails we return the full xml error
+		commitCheckReply, err := g.Driver.SendRaw(validateCandidate)
+		if err != nil {
+			errInternal := g.Driver.Close()
+			return fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
+		}
+		// I am doing string checks simply because it is most likely more efficient
+		// than loading in through a xml parser
+		if !strings.Contains(commitCheckReply.Data, "commit-check-success") {
+			return fmt.Errorf("candidate commit check failed %s", commitCheckReply.Data)
+		}
 	}
 	if _, err := g.Driver.SendRaw(commitStr); err != nil {
 		return err
