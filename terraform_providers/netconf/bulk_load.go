@@ -94,7 +94,7 @@ func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool) error
 	}
 
 	if deleteCache != "" {
-		tflog.Info(ctx, "Applying delete records from cache")
+		tflog.Debug(ctx, "Applying delete records from cache")
 		bulkDeleteString := fmt.Sprintf(bulkDeleteStr, deleteCache)
 		// So on the commit we are going to send our entire delete-cache, if we get any load error
 		// we return the full xml error response and exit
@@ -110,7 +110,7 @@ func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool) error
 		}
 	}
 	if writeCache != "" {
-		tflog.Info(ctx, "Applying write records from cache")
+		tflog.Debug(ctx, "Applying write records from cache")
 		bulkCreateString := fmt.Sprintf(bulkGroupStrXML, writeCache)
 		// So on the commit we are going to send our entire write-cache, if we get any load error
 		// we return the full xml error response and exit
@@ -126,7 +126,7 @@ func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool) error
 		}
 	}
 	if commitCheck {
-		tflog.Info(ctx, "Performing commit check")
+		tflog.Debug(ctx, "Performing commit check")
 		// we have loaded the full configuration without any error
 		// before we can commit this we are going to do a commit check
 		// if it fails we return the full xml error
@@ -140,13 +140,11 @@ func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool) error
 		if !strings.Contains(commitCheckReply.Data, "commit-check-success") {
 			return fmt.Errorf("candidate commit check failed %s", commitCheckReply.Data)
 		}
-		tflog.Info(ctx, "Commit check succeeded")
+		tflog.Debug(ctx, "Commit check succeeded")
 	}
-	tflog.Info(ctx, "Sending commit")
 	if _, err := g.Driver.SendRaw(bulkCommitStr); err != nil {
 		return err
 	}
-	tflog.Info(ctx, "Commit succeeded")
 	return nil
 }
 
