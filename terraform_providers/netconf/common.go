@@ -1,6 +1,7 @@
 package netconf
 
 import (
+	"context"
 	"golang.org/x/crypto/ssh"
 	"io/ioutil"
 )
@@ -8,7 +9,7 @@ import (
 type Client interface {
 	Close() error
 	DeleteConfig(applyGroup string, commit bool) (string, error)
-	SendCommit(check bool) error
+	SendCommit(ctx context.Context, check bool) error
 	MarshalGroup(id string, obj interface{}) error
 	SendTransaction(id string, obj interface{}, commit bool) error
 }

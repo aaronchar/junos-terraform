@@ -1,13 +1,16 @@
 package netconf
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"strings"
+	"sync"
+
 	driver "github.com/davedotdev/go-netconf/drivers/driver"
 	sshdriver "github.com/davedotdev/go-netconf/drivers/ssh"
 	"golang.org/x/crypto/ssh"
-	"strings"
-	"sync"
 )
 
 const bulkGroupStrXML = `<load-configuration action="merge" format="xml">
@@ -79,7 +82,7 @@ func (g *BulkGoNCClient) DeleteConfig(applyGroup string, _ bool) (string, error)
 }
 
 // SendCommit is a wrapper for driver.SendRaw()
-func (g *BulkGoNCClient) SendCommit(commitCheck bool) error {
+func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool) error {
 
 	g.Lock.Lock()
 	defer g.Lock.Unlock()
@@ -91,7 +94,7 @@ func (g *BulkGoNCClient) SendCommit(commitCheck bool) error {
 	}
 
 	if deleteCache != "" {
-		fmt.Println("[INFO]: Applying delete records from cache")
+		tflog.Info(g.ParentCtx, "Applying delete records from cache")
 		bulkDeleteString := fmt.Sprintf(bulkDeleteStr, deleteCache)
 		// So on the commit we are going to send our entire delete-cache, if we get any load error
 		// we return the full xml error response and exit
@@ -107,7 +110,7 @@ func (g *BulkGoNCClient) SendCommit(commitCheck bool) error {
 		}
 	}
 	if writeCache != "" {
-		fmt.Println("[INFO]: Applying write records from cache")
+		tflog.Info(g.ParentCtx, "Applying write records from cache")
 		bulkCreateString := fmt.Sprintf(bulkGroupStrXML, writeCache)
 		// So on the commit we are going to send our entire write-cache, if we get any load error
 		// we return the full xml error response and exit
@@ -123,7 +126,7 @@ func (g *BulkGoNCClient) SendCommit(commitCheck bool) error {
 		}
 	}
 	if commitCheck {
-		fmt.Println("[INFO]: Performing commit check")
+		tflog.Info(g.ParentCtx, "Performing commit check")
 		// we have loaded the full configuration without any error
 		// before we can commit this we are going to do a commit check
 		// if it fails we return the full xml error
@@ -137,12 +140,13 @@ func (g *BulkGoNCClient) SendCommit(commitCheck bool) error {
 		if !strings.Contains(commitCheckReply.Data, "commit-check-success") {
 			return fmt.Errorf("candidate commit check failed %s", commitCheckReply.Data)
 		}
-		fmt.Println("[INFO]: Commit check succeeded")
+		tflog.Info(g.ParentCtx, "Commit check succeeded")
 	}
-	fmt.Println("[INFO]: Sending commit")
+	tflog.Info(g.ParentCtx, "Sending commit")
 	if _, err := g.Driver.SendRaw(bulkCommitStr); err != nil {
 		return err
 	}
+	tflog.Info(g.ParentCtx, "Commit succeeded")
 	return nil
 }
 

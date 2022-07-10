@@ -30,7 +30,7 @@ func junosCommitCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	commitCheck := d.Get("commit_check").(bool)
 	client := m.(*ProviderConfig)
 
-	if err := client.SendCommit(commitCheck); err != nil {
+	if err := client.SendCommit(ctx, commitCheck); err != nil {
 		return diag.FromErr(err)
 	}
 	d.SetId(fmt.Sprintf("%s_%s", client.Host, id))

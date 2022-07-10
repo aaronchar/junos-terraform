@@ -55,7 +55,7 @@ func junosDestroyCommitDelete(ctx context.Context, d *schema.ResourceData, m int
 
 	client := m.(*ProviderConfig)
 	commitCheck := d.Get("commit_check").(bool)
-	if err := client.SendCommit(commitCheck); err != nil {
+	if err := client.SendCommit(ctx, commitCheck); err != nil {
 		return diag.FromErr(err)
 	}
 
