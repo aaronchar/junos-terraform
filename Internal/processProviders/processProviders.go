@@ -387,12 +387,12 @@ import (
     `
 
 	strSendTrans = `
-    err = client.SendTransaction("", config, false)
+    err = client.SendTransaction(ctx,"", config, false)
     check(ctx, err)
     `
 
 	strSendTransId = `
-    err = client.SendTransaction(id, config, false)
+    err = client.SendTransaction(ctx,id, config, false)
     check(ctx, err)
     `
 
@@ -415,7 +415,7 @@ import (
 	strUpdate = ""
 
 	strDelete = `
-    _, err = client.DeleteConfig(id,false)
+    _, err = client.DeleteConfig(ctx,id,false)
     check(ctx, err)
 
     d.SetId("")
@@ -827,7 +827,7 @@ func initializeFunctionString(name string) {
 		strStruct += "\n\tGroups  struct {\n\t\tXMLName\txml.Name\t`xml:\"groups\"`\n\t\tName\tstring\t`xml:\"name\"`"
 		strStructEnd = "\n\t} `xml:\"groups\"`\n\tApplyGroup string `xml:\"apply-groups\"`"
 	}
-	strRead = "\n\tconfig := &xml" + name + "{}\n\n\terr = client.MarshalGroup(id, config)\n\tcheck(ctx, err)\n"
+	strRead = "\n\tconfig := &xml" + name + "{}\n\n\terr = client.MarshalGroup(ctx,id, config)\n\tcheck(ctx, err)\n"
 
 	// Append text for Create Function.
 	strCreate += "func junos" + name + "Create" + strClientInit

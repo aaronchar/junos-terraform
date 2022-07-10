@@ -8,10 +8,10 @@ import (
 
 type Client interface {
 	Close() error
-	DeleteConfig(applyGroup string, commit bool) (string, error)
+	DeleteConfig(ctx context.Context, applyGroup string, commit bool) (string, error)
 	SendCommit(ctx context.Context, check bool) error
-	MarshalGroup(id string, obj interface{}) error
-	SendTransaction(id string, obj interface{}, commit bool) error
+	MarshalGroup(ctx context.Context, id string, obj interface{}) error
+	SendTransaction(ctx context.Context, id string, obj interface{}, commit bool) error
 }
 
 const validateCandidate = `<validate> 
