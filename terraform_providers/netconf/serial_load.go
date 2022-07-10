@@ -1,6 +1,7 @@
 package netconf
 
 import (
+	"context"
 	"encoding/xml"
 	"fmt"
 	"strings"
@@ -125,7 +126,7 @@ func (g *GoNCClient) DeleteConfig(applyGroup string, commit bool) (string, error
 }
 
 // SendCommit is a wrapper for driver.SendRaw()
-func (g *GoNCClient) SendCommit(commitCheck bool) error {
+func (g *GoNCClient) SendCommit(ctx context.Context, commitCheck bool) error {
 	g.Lock.Lock()
 	defer g.Lock.Unlock()
 
