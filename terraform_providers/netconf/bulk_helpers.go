@@ -84,6 +84,7 @@ func (b *batchHelper) AddToDeleteMap(in string) error {
 	b.deleteCacheMap.Store(groupName, nv)
 	return nil
 }
+
 func (b *batchHelper) QueryGroupXMLFromCache(id string) (string, error) {
 
 	if writeElements, found := b.writeCacheMap.Load(id); found {
@@ -100,6 +101,7 @@ func (b *batchHelper) QueryGroupXMLFromCache(id string) (string, error) {
 	}
 	return "", nil
 }
+
 func (b *batchHelper) QueryGroupReadMap(id string) string {
 	var out string
 	if ev, ok := b.readCacheMap.Load(id); ok {
@@ -151,9 +153,11 @@ func (b *batchHelper) QueryAllGroupDeletes() string {
 	})
 	return out
 }
+
 func (b *batchHelper) IsHydrated() bool {
 	return b.readGroupIsHydrated
 }
+
 func (b *batchHelper) findGroupInDoc(payload string, search string) ([]*xmlquery.Node, error) {
 	doc, err := xmlquery.Parse(strings.NewReader(payload))
 	if err != nil {

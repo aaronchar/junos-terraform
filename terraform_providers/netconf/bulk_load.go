@@ -192,19 +192,7 @@ func (g *BulkGoNCClient) sendRawConfig(netconfCall string, _ bool) (string, erro
 // readRawGroup is a helper function
 func (g *BulkGoNCClient) readRawGroup(applyGroup string) (string, error) {
 	if !g.BH.IsHydrated() {
-		if err := g.Driver.Dial(); err != nil {
-			errInternal := g.Driver.Close()
-			return "", fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
-		}
-		reply, err := g.Driver.SendRaw(bulkGetGroupXMLStr)
-		if err != nil {
-			errInternal := g.Driver.Close()
-			return "", fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
-		}
-		if err := g.Driver.Close(); err != nil {
-			return "", err
-		}
-		if err := g.BH.AddToReadMap(reply.Data); err != nil {
+		if err := g.hydrateReadCache(); err != nil {
 			return "", err
 		}
 	}
