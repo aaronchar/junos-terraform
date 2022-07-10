@@ -54,8 +54,8 @@ func junosDestroyCommitUpdate(ctx context.Context, d *schema.ResourceData, m int
 func junosDestroyCommitDelete(ctx context.Context, d *schema.ResourceData, m interface{}) diag.Diagnostics {
 
 	client := m.(*ProviderConfig)
-
-	if err := client.SendCommit(); err != nil {
+	commitCheck := d.Get("commit_check").(bool)
+	if err := client.SendCommit(commitCheck); err != nil {
 		return diag.FromErr(err)
 	}
 
@@ -76,6 +76,11 @@ func junosDestroyCommit() *schema.Resource {
 			"resource_name": &schema.Schema{
 				Type:     schema.TypeString,
 				Required: true,
+			},
+			"commit_check": &schema.Schema{
+				Type:     schema.TypeBool,
+				Optional: true,
+				Default:  false,
 			},
 		},
 	}
