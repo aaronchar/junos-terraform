@@ -133,6 +133,7 @@ func (g *GoNCClient) SendCommit(commitCheck bool) error {
 		return err
 	}
 	if commitCheck {
+		fmt.Println("[INFO]: Performing commit check")
 		// we have loaded the full configuration without any error
 		// before we can commit this we are going to do a commit check
 		// if it fails we return the full xml error
@@ -146,7 +147,9 @@ func (g *GoNCClient) SendCommit(commitCheck bool) error {
 		if !strings.Contains(commitCheckReply.Data, "commit-check-success") {
 			return fmt.Errorf("candidate commit check failed %s", commitCheckReply.Data)
 		}
+		fmt.Println("[INFO]: Commit check succeeded")
 	}
+	fmt.Println("[INFO]: Sending commit")
 	if _, err := g.Driver.SendRaw(commitStr); err != nil {
 		return err
 	}
