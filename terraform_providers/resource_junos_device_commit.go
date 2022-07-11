@@ -37,12 +37,9 @@ func junosCommitCreate(ctx context.Context, d *schema.ResourceData, m interface{
 	}
 	d.SetId(fmt.Sprintf("%s_%s", client.Host, id))
 
-	//if getRollbackInfo {
-	//
-	//}
-	//if err := client.Close(); err != nil {
-	//	return diag.FromErr(err)
-	//}
+	if err := client.Close(); err != nil {
+		return diag.FromErr(err)
+	}
 	return junosCommitRead(ctx, d, m)
 }
 
@@ -74,11 +71,6 @@ func junosCommit() *schema.Resource {
 				Required: true,
 			},
 			"commit_check": &schema.Schema{
-				Type:     schema.TypeBool,
-				Optional: true,
-				Default:  false,
-			},
-			"rollback_information": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,

@@ -250,26 +250,6 @@ func (g *GoNCClient) readRawGroup(applyGroup string) (string, error) {
 	return reply.Data, nil
 }
 
-// sendRawNetconfConfig - This is meant for sending a raw NETCONF strings without any wrapping around the input
-func (g *GoNCClient) sendRawNetconfConfig(ctx context.Context, input string) (string, error) {
-	g.Lock.Lock()
-	defer g.Lock.Unlock()
-
-	if err := g.Driver.Dial(); err != nil {
-		return "", err
-	}
-	reply, err := g.Driver.SendRaw(input)
-	if err != nil {
-		errInternal := g.Driver.Close()
-		g.Lock.Unlock()
-		return "", fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
-	}
-	if err = g.Driver.Close(); err != nil {
-		return "", err
-	}
-	return reply.Data, nil
-}
-
 // NewSerialClient returns go-netconf new client driver
 func NewSerialClient(username string, password string, sshKey string, address string, port int) (Client, error) {
 

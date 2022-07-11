@@ -189,26 +189,6 @@ func (g *BulkGoNCClient) SendTransaction(ctx context.Context, id string, obj int
 	return nil
 }
 
-// sendRawNetconfConfig - This is meant for sending a raw NETCONF strings without any wrapping around the input
-func (g *BulkGoNCClient) sendRawNetconfConfig(ctx context.Context, input string) (string, error) {
-	g.Lock.Lock()
-	defer g.Lock.Unlock()
-
-	if err := g.Driver.Dial(); err != nil {
-		return "", err
-	}
-	reply, err := g.Driver.SendRaw(input)
-	if err != nil {
-		errInternal := g.Driver.Close()
-		g.Lock.Unlock()
-		return "", fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
-	}
-	if err = g.Driver.Close(); err != nil {
-		return "", err
-	}
-	return reply.Data, nil
-}
-
 // sendRawConfig is a wrapper for driver.SendRaw()
 func (g *BulkGoNCClient) sendRawConfig(netconfCall string, _ bool) (string, error) {
 	if err := g.BH.AddToWriteMap(netconfCall); err != nil {

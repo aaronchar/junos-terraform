@@ -33,10 +33,10 @@ func junosDestroyCommitCreate(ctx context.Context, d *schema.ResourceData, m int
 
 	d.SetId(fmt.Sprintf("%s_%s", client.Host, id))
 
-	// err = client.Close()
-	// if err != nil {
-	// 	return err
-	// }
+	err = client.Close()
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
@@ -55,15 +55,11 @@ func junosDestroyCommitDelete(ctx context.Context, d *schema.ResourceData, m int
 
 	client := m.(*ProviderConfig)
 	commitCheck := d.Get("commit_check").(bool)
-	//getRollbackInfo := d.Get("rollback_information").(bool)
 
 	if err := client.SendCommit(ctx, commitCheck); err != nil {
 		return diag.FromErr(err)
 	}
 
-	//if getRollbackInfo {
-	//
-	//}
 	if err := client.Close(); err != nil {
 		return diag.FromErr(err)
 	}
@@ -87,7 +83,7 @@ func junosDestroyCommit() *schema.Resource {
 				Optional: true,
 				Default:  false,
 			},
-			"rollback_information": &schema.Schema{
+			"check_rollback_information": &schema.Schema{
 				Type:     schema.TypeBool,
 				Optional: true,
 				Default:  false,
