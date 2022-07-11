@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
+	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"strings"
 	"sync"
@@ -47,6 +48,13 @@ const bulkDeleteStr = `<edit-config>
 	</config>
 </edit-config>`
 
+const bulkValidateCandidate = `<
+validate> 
+<source> 
+	<candidate/> 
+</source> 
+</validate>`
+
 // BulkGoNCClient type for storing data and wrapping functions
 type BulkGoNCClient struct {
 	Driver driver.Driver
@@ -82,7 +90,7 @@ func (g *BulkGoNCClient) DeleteConfig(ctx context.Context, applyGroup string, _ 
 }
 
 // SendCommit is a wrapper for driver.SendRaw()
-func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool) error {
+func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool, rollbackInfo bool) error {
 
 	g.Lock.Lock()
 	defer g.Lock.Unlock()
@@ -130,7 +138,7 @@ func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool) error
 		// we have loaded the full configuration without any error
 		// before we can commit this we are going to do a commit check
 		// if it fails we return the full xml error
-		commitCheckReply, err := g.Driver.SendRaw(validateCandidate)
+		commitCheckReply, err := g.Driver.SendRaw(bulkValidateCandidate)
 		if err != nil {
 			errInternal := g.Driver.Close()
 			return fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
@@ -144,6 +152,14 @@ func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool) error
 	}
 	if _, err := g.Driver.SendRaw(bulkCommitStr); err != nil {
 		return err
+	}
+	if rollbackInfo {
+		rbPayload := `<get-rollback-information><rollback>0</rollback><compare>1</compare></get-rollback-information>`
+		rbOut, err := g.sendRawNetconfConfig(ctx, rbPayload)
+		if err != nil {
+			return err
+		}
+		spew.Dump(rbOut)
 	}
 	return nil
 }
@@ -178,6 +194,26 @@ func (g *BulkGoNCClient) SendTransaction(ctx context.Context, id string, obj int
 		return err
 	}
 	return nil
+}
+
+// sendRawNetconfConfig - This is meant for sending a raw NETCONF strings without any wrapping around the input
+func (g *BulkGoNCClient) sendRawNetconfConfig(ctx context.Context, input string) (string, error) {
+	g.Lock.Lock()
+	defer g.Lock.Unlock()
+
+	if err := g.Driver.Dial(); err != nil {
+		return "", err
+	}
+	reply, err := g.Driver.SendRaw(input)
+	if err != nil {
+		errInternal := g.Driver.Close()
+		g.Lock.Unlock()
+		return "", fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
+	}
+	if err = g.Driver.Close(); err != nil {
+		return "", err
+	}
+	return reply.Data, nil
 }
 
 // sendRawConfig is a wrapper for driver.SendRaw()

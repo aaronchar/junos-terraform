@@ -42,6 +42,12 @@ const getGroupXMLStr = `<get-configuration>
   </configuration>
 </get-configuration>
 `
+const validateCandidate = `<
+validate> 
+<source> 
+	<candidate/> 
+</source> 
+</validate>`
 
 // GoNCClient type for storing data and wrapping functions
 type GoNCClient struct {
@@ -127,7 +133,7 @@ func (g *GoNCClient) DeleteConfig(ctx context.Context, applyGroup string, commit
 }
 
 // SendCommit is a wrapper for driver.SendRaw()
-func (g *GoNCClient) SendCommit(ctx context.Context, commitCheck bool) error {
+func (g *GoNCClient) SendCommit(ctx context.Context, commitCheck bool, rollbackInfo bool) error {
 	g.Lock.Lock()
 	defer g.Lock.Unlock()
 
@@ -153,6 +159,10 @@ func (g *GoNCClient) SendCommit(ctx context.Context, commitCheck bool) error {
 	}
 	if _, err := g.Driver.SendRaw(commitStr); err != nil {
 		return err
+	}
+
+	if rollbackInfo {
+		
 	}
 	return nil
 }
@@ -235,6 +245,26 @@ func (g *GoNCClient) readRawGroup(applyGroup string) (string, error) {
 		return "", fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
 	}
 
+	if err = g.Driver.Close(); err != nil {
+		return "", err
+	}
+	return reply.Data, nil
+}
+
+// sendRawNetconfConfig - This is meant for sending a raw NETCONF strings without any wrapping around the input
+func (g *GoNCClient) sendRawNetconfConfig(ctx context.Context, input string) (string, error) {
+	g.Lock.Lock()
+	defer g.Lock.Unlock()
+
+	if err := g.Driver.Dial(); err != nil {
+		return "", err
+	}
+	reply, err := g.Driver.SendRaw(input)
+	if err != nil {
+		errInternal := g.Driver.Close()
+		g.Lock.Unlock()
+		return "", fmt.Errorf("driver error: %+v, driver close error: %s", err, errInternal)
+	}
 	if err = g.Driver.Close(); err != nil {
 		return "", err
 	}
