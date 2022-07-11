@@ -55,12 +55,15 @@ func junosDestroyCommitDelete(ctx context.Context, d *schema.ResourceData, m int
 
 	client := m.(*ProviderConfig)
 	commitCheck := d.Get("commit_check").(bool)
-	getRollbackInfo := d.Get("rollback_information").(bool)
+	//getRollbackInfo := d.Get("rollback_information").(bool)
 
-	if err := client.SendCommit(ctx, commitCheck, getRollbackInfo); err != nil {
+	if err := client.SendCommit(ctx, commitCheck); err != nil {
 		return diag.FromErr(err)
 	}
 
+	//if getRollbackInfo {
+	//
+	//}
 	if err := client.Close(); err != nil {
 		return diag.FromErr(err)
 	}

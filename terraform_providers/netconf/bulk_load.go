@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/xml"
 	"fmt"
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"strings"
 	"sync"
@@ -13,6 +12,8 @@ import (
 	sshdriver "github.com/davedotdev/go-netconf/drivers/ssh"
 	"golang.org/x/crypto/ssh"
 )
+
+const bulkRollbackStrXML = `<get-rollback-information><rollback>0</rollback><compare>1</compare></get-rollback-information>`
 
 const bulkGroupStrXML = `<load-configuration action="merge" format="xml">
 <configuration>
@@ -90,7 +91,7 @@ func (g *BulkGoNCClient) DeleteConfig(ctx context.Context, applyGroup string, _ 
 }
 
 // SendCommit is a wrapper for driver.SendRaw()
-func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool, rollbackInfo bool) error {
+func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool) error {
 
 	g.Lock.Lock()
 	defer g.Lock.Unlock()
@@ -152,14 +153,6 @@ func (g *BulkGoNCClient) SendCommit(ctx context.Context, commitCheck bool, rollb
 	}
 	if _, err := g.Driver.SendRaw(bulkCommitStr); err != nil {
 		return err
-	}
-	if rollbackInfo {
-		rbPayload := `<get-rollback-information><rollback>0</rollback><compare>1</compare></get-rollback-information>`
-		rbOut, err := g.sendRawNetconfConfig(ctx, rbPayload)
-		if err != nil {
-			return err
-		}
-		spew.Dump(rbOut)
 	}
 	return nil
 }

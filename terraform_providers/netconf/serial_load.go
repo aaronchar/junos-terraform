@@ -14,6 +14,8 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+const rollbackStrXML = `<get-rollback-information><rollback>0</rollback><compare>1</compare></get-rollback-information>`
+
 const groupStrXML = `<load-configuration action="merge" format="xml">
 %s
 </load-configuration>
@@ -133,7 +135,7 @@ func (g *GoNCClient) DeleteConfig(ctx context.Context, applyGroup string, commit
 }
 
 // SendCommit is a wrapper for driver.SendRaw()
-func (g *GoNCClient) SendCommit(ctx context.Context, commitCheck bool, rollbackInfo bool) error {
+func (g *GoNCClient) SendCommit(ctx context.Context, commitCheck bool) error {
 	g.Lock.Lock()
 	defer g.Lock.Unlock()
 
@@ -161,9 +163,6 @@ func (g *GoNCClient) SendCommit(ctx context.Context, commitCheck bool, rollbackI
 		return err
 	}
 
-	if rollbackInfo {
-		
-	}
 	return nil
 }
 
